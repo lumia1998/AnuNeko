@@ -17,6 +17,7 @@ class AnuNekoAPI:
     # API 地址
     CHAT_API_URL = "https://anuneko.com/api/v1/chat"
     STREAM_API_URL = "https://anuneko.com/api/v1/msg/{uuid}/stream"
+    MODEL_VIEW_URL = "https://anuneko.com/api/v1/user/view"
     SELECT_CHOICE_URL = "https://anuneko.com/api/v1/msg/select-choice"
     SELECT_MODEL_URL = "https://anuneko.com/api/v1/user/select_model"
     
@@ -61,6 +62,24 @@ class AnuNekoAPI:
             
         return headers
     
+    async def model_view(self) -> Dict[str, Union[str, List[str]]]:
+    
+        """
+        获取模型列表
+        
+        Returns:
+            模型列表，包含模型名称
+        """
+        headers = self.build_headers()
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                resp = await client.get(self.MODEL_VIEW_URL, headers=headers)
+                resp_json = resp.json()
+                return resp_json
+        except Exception:
+            pass
+            
+        return None
     async def create_session(self, model: str = "Orange Cat") -> Optional[str]:
         """
         创建新会话
@@ -280,110 +299,3 @@ class AnuNekoAPI:
                 
         except Exception:
             yield "请求失败，请稍后再试。"
-
-
-# 便捷函数，可以直接调用而无需创建类实例
-
-async def create_session(token: str = None, cookie: str = None, model: str = "Orange Cat") -> Optional[str]:
-    """
-    创建新会话的便捷函数
-    
-    Args:
-        token: 账号 Token
-        cookie: 可选的 Cookie 值
-        model: 模型名称，默认为 "Orange Cat"
-        
-    Returns:
-        会话 ID，如果创建失败则返回 None
-    """
-    api = AnuNekoAPI(token, cookie)
-    return await api.create_session(model)
-
-
-async def send_message(token: str, session_uuid: str, contents: List[str], cookie: str = None) -> str:
-    """
-    发送消息到 AnuNeko 的便捷函数
-    
-    Args:
-        token: 账号 Token
-        session_uuid: 会话 UUID
-        contents: 消息内容列表
-        cookie: 可选的 Cookie 值
-        
-    Returns:
-        AI 的回复文本
-    """
-    api = AnuNekoAPI(token, cookie)
-    return await api.stream_reply(session_uuid, contents[0] if contents else "")
-
-
-async def switch_model(token: str, chat_id: str, model: str, cookie: str = None) -> bool:
-    """
-    切换会话的 AI 模型的便捷函数
-    
-    Args:
-        token: 账号 Token
-        chat_id: 会话 ID
-        model: 模型名称 ("Exotic Shorthair" 或 "Orange Cat")
-        cookie: 可选的 Cookie 值
-        
-    Returns:
-        是否切换成功
-    """
-    api = AnuNekoAPI(token, cookie)
-    return await api.switch_model(chat_id, model)
-
-
-async def select_choice(token: str, msg_id: str, choice_idx: int = 0, cookie: str = None) -> bool:
-    """
-    选择回复选项的便捷函数
-    
-    Args:
-        token: 账号 Token
-        msg_id: 消息 ID
-        choice_idx: 选择的回复索引，默认为 0
-        cookie: 可选的 Cookie 值
-        
-    Returns:
-        是否选择成功
-    """
-    api = AnuNekoAPI(token, cookie)
-    return await api.send_choice(msg_id, choice_idx)
-
-
-# 示例使用
-if __name__ == "__main__":
-    import asyncio
-    
-    async def main():
-        # 示例配置 - 请替换为实际的 token 和 cookie
-        EXAMPLE_TOKEN = "你的Token"
-        EXAMPLE_COOKIE = "你的Cookie"
-        
-        # 创建 API 实例
-        api = AnuNekoAPI(EXAMPLE_TOKEN, EXAMPLE_COOKIE)
-        
-        # 示例 1: 创建会话
-        try:
-            chat_id = await api.create_session("Orange Cat")
-            print(f"创建会话成功，ID: {chat_id}")
-            
-            if chat_id:
-                # 示例 2: 发送消息
-                response = await api.stream_reply(chat_id, "你好，AnuNeko！")
-                print(f"AI 回复: {response}")
-                
-                # 示例 3: 切换模型
-                success = await api.switch_model(chat_id, "Exotic Shorthair")
-                print(f"切换模型成功: {success}")
-                
-                # 示例 4: 使用生成器方式获取流式回复
-                print("流式回复:")
-                async for chunk in api.stream_reply_generator(chat_id, "介绍一下你自己"):
-                    print(chunk, end="", flush=True)
-                print()
-        except Exception as e:
-            print(f"操作失败: {e}")
-    
-    # 运行示例
-    asyncio.run(main())

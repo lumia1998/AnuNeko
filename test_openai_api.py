@@ -10,7 +10,7 @@ import requests
 import os
 
 # API 基础 URL
-BASE_URL = os.environ.get("API_BASE_URL", "http://localhost:8080")
+BASE_URL = os.environ.get("API_BASE_URL", "http://localhost:8000")
 
 def test_health_check():
     """测试健康检查端点"""

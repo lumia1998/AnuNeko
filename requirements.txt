@@ -3,6 +3,9 @@
 # 用于异步 HTTP 请求
 httpx>=0.24.0
 
+# 用于从 .env 文件加载环境变量
+python-dotenv>=1.0.0
+
 # Flask Web 框架
 Flask>=2.3.0
 

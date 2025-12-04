@@ -56,6 +56,71 @@ class TestAnuNekoAPI(unittest.TestCase):
         self.assertEqual(headers_text["content-type"], "text/plain")
     
     @patch('anuneko_api.httpx.AsyncClient')
+    async def test_model_view(self, mock_client_class):
+        """测试获取模型列表"""
+        # 模拟响应
+        mock_client = AsyncMock()
+        mock_client_class.return_value.__aenter__.return_value = mock_client
+        
+        # 模拟API响应数据
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "models": ["Orange Cat", "Exotic Shorthair", "Siamese"],
+            "default_model": "Orange Cat"
+        }
+        mock_client.get.return_value = mock_response
+        
+        # 调用函数
+        result = await self.api.model_view()
+        
+        # 验证调用
+        expected_url = self.api.MODEL_VIEW_URL
+        mock_client.get.assert_called_once_with(expected_url, headers=self.api.build_headers())
+        
+        # 验证返回值
+        expected_result = {
+            "models": ["Orange Cat", "Exotic Shorthair", "Siamese"],
+            "default_model": "Orange Cat"
+        }
+        self.assertEqual(result, expected_result)
+    
+    @patch('anuneko_api.httpx.AsyncClient')
+    async def test_model_view_error(self, mock_client_class):
+        """测试获取模型列表错误处理"""
+        # 模拟异常
+        mock_client = AsyncMock()
+        mock_client_class.return_value.__aenter__.return_value = mock_client
+        mock_client.get.side_effect = Exception("Network error")
+        
+        # 调用函数
+        result = await self.api.model_view()
+        
+        # 验证返回值为None
+        self.assertIsNone(result)
+    
+    @patch('anuneko_api.httpx.AsyncClient')
+    async def test_model_view_empty_response(self, mock_client_class):
+        """测试获取模型列表空响应"""
+        # 模拟响应
+        mock_client = AsyncMock()
+        mock_client_class.return_value.__aenter__.return_value = mock_client
+        
+        # 模拟空响应
+        mock_response = MagicMock()
+        mock_response.json.return_value = {}
+        mock_client.get.return_value = mock_response
+        
+        # 调用函数
+        result = await self.api.model_view()
+        
+        # 验证调用
+        expected_url = self.api.MODEL_VIEW_URL
+        mock_client.get.assert_called_once_with(expected_url, headers=self.api.build_headers())
+        
+        # 验证返回值为空字典
+        self.assertEqual(result, {})
+    
+    @patch('anuneko_api.httpx.AsyncClient')
     async def test_create_session(self, mock_client_class):
         """测试创建会话"""
         # 模拟响应
@@ -277,6 +342,9 @@ def async_test(test_func):
 
 
 # 应用装饰器到异步测试方法
+TestAnuNekoAPI.test_model_view = async_test(TestAnuNekoAPI.test_model_view)
+TestAnuNekoAPI.test_model_view_error = async_test(TestAnuNekoAPI.test_model_view_error)
+TestAnuNekoAPI.test_model_view_empty_response = async_test(TestAnuNekoAPI.test_model_view_empty_response)
 TestAnuNekoAPI.test_create_session = async_test(TestAnuNekoAPI.test_create_session)
 TestAnuNekoAPI.test_switch_model = async_test(TestAnuNekoAPI.test_switch_model)
 TestAnuNekoAPI.test_send_choice = async_test(TestAnuNekoAPI.test_send_choice)
