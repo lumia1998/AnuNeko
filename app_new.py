@@ -18,6 +18,9 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
+# 配置 Flask 应用以支持中文显示
+app.config['JSON_AS_ASCII'] = False
+
 # 配置日志
 # 设置日志文件路径
 log_path = os.environ.get("LOG_PATH", "logs")
@@ -42,8 +45,6 @@ file_handler.setLevel(logging.INFO)
 # 添加处理器到应用日志器
 app.logger.addHandler(file_handler)
 app.logger.setLevel(logging.INFO)
-
-
 
 # 注册路由
 app.register_blueprint(
@@ -85,7 +86,7 @@ if __name__ == "__main__":
     # 检查环境变量
     if not os.environ.get("ANUNEKO_TOKEN"):
         app.logger.error("⚠️ 警告: 未设置 ANUNEKO_TOKEN 环境变量")
-        app.logger.error("   请设置 AnuNeko 账号 Token")
+        app.logger.error("请设置 AnuNeko 账号 Token")
     
     # 启动服务器
     app.run(host=host, port=port, debug=debug)

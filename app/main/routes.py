@@ -1,6 +1,6 @@
 from flask import Blueprint
 # 导入处理函数
-from . import health , sessions
+from app.main import health,sessions
 
 # 创建蓝图
 health_bp = Blueprint("health", __name__)
@@ -16,11 +16,11 @@ def health_check():
 
 @sessions_dp.route("", methods=["GET"])
 @sessions_dp.route("/", methods=["GET"])
-def list_sessions():
+def list_sessions_route():
     """列出会话"""
-    return sessions.list_sessions()
+    return sessions.show()
 
 @sessions_dp.route("/<session_id>", methods=["DELETE"])
-def delete_session(session_id: str):
+def delete_session_route(session_id: str):
     """删除会话"""
-    return sessions.delete_session(session_id)
+    return sessions.delete(session_id)
