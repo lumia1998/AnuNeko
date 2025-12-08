@@ -1,23 +1,18 @@
 from app.services.anuneko_service import AnuNekoAPI
+from app.services.session_service import session_service
 import asyncio
 import time
 from flask import jsonify
 from typing import Dict, Optional
 
-# 初始化全局变量
-anuneko_api = None
-
 def show(model_name: Optional[str] = None):
     """列出可用模型"""
     def get_anuneko_api() -> AnuNekoAPI:
         """获取 AnuNeko API 实例"""
-        global anuneko_api
-        if anuneko_api is None:
-            anuneko_api = AnuNekoAPI()
-        return anuneko_api
+        return session_service.get_anuneko_api()
     
-    # 动态模型映射表
-    MODEL_MAPPING: Dict[str, str] = {}
+    # 使用会话服务中的模型映射表
+    MODEL_MAPPING = session_service.MODEL_MAPPING
 
     try:
         # 尝试从AnuNeko API获取真实模型列表
@@ -71,10 +66,14 @@ def show(model_name: Optional[str] = None):
                 }), 404
             
             print(f"已更新模型映射表，共{len(MODEL_MAPPING)}个模型")
+            # 同时更新会话服务中的模型映射
+            session_service.MODEL_MAPPING = MODEL_MAPPING.copy()
         else:
             # 如果无法获取真实模型，使用默认映射
             MODEL_MAPPING.clear()
             MODEL_MAPPING["mihoyo-orange_cat"] = "Orange Cat"
+            # 同时更新会话服务中的模型映射
+            session_service.MODEL_MAPPING = MODEL_MAPPING.copy()
             
             default_model = {
                 "id": "mihoyo-orange_cat",
@@ -116,6 +115,8 @@ def show(model_name: Optional[str] = None):
         # 如果出错，设置默认映射作为后备
         MODEL_MAPPING.clear()
         MODEL_MAPPING["mihoyo-orange_cat"] = "Orange Cat"
+        # 同时更新会话服务中的模型映射
+        session_service.MODEL_MAPPING = MODEL_MAPPING.copy()
         
         models = [{
             "id": "mihoyo-orange_cat",

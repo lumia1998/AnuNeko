@@ -13,6 +13,10 @@ from dotenv import load_dotenv
 from app.main.routes import health_bp, sessions_dp
 from app.api.v1.routes import api_v1_bp
 
+# 导入并初始化服务
+from app.services.session_service import session_service
+from app.services.chat_service import chat_service
+
 # 加载环境变量
 load_dotenv()
 
