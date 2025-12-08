@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+# -*- coding: utf-8 -*-
 import os
 
 import logging
@@ -9,7 +11,7 @@ from dotenv import load_dotenv
 
 # 导入路由
 from app.main.routes import health_bp, sessions_dp
-from app.api.routes import api_bp
+from app.api.v1.routes import api_v1_bp
 
 # 加载环境变量
 load_dotenv()
@@ -57,11 +59,17 @@ app.register_blueprint(
     url_prefix="/sessions"
 )
 
+# 注册 api-v1 版本路由
 app.register_blueprint(
-    blueprint=api_bp,
-    url_prefix="/api"
+    blueprint=api_v1_bp,
+    url_prefix="/v1"
 )
 
+@app.route("/", methods=["GET"])
+def index():
+    return jsonify({
+        "message": "欢迎使用 AnuNeko OpenAI API 兼容服务器"
+    })
 @app.errorhandler(404)
 def not_found(error):
     """404 错误处理"""
