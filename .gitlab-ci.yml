@@ -1,0 +1,91 @@
+# GitLab CI/CD配置文件
+# 用于自动构建和推送Docker镜像
+
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  IMAGE_TAG: $CI_COMMIT_SHORT_SHA
+  IMAGE_NAME: $CI_REGISTRY_IMAGE
+
+# 构建Docker镜像
+build_image:
+  stage: build
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  script:
+    - docker build -t $IMAGE_NAME:$IMAGE_TAG -f ./docker/Dockerfile .
+    - docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:latest
+    - docker push $IMAGE_NAME:$IMAGE_TAG
+    - docker push $IMAGE_NAME:latest
+  only:
+    - main
+    - master
+    - tags
+
+# 运行测试
+test_image:
+  stage: test
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  script:
+    - docker pull $IMAGE_NAME:$IMAGE_TAG
+    - docker run --rm -d --name test-container -e ANUNEKO_TOKEN=test_token -p 8000:8000 $IMAGE_NAME:$IMAGE_TAG
+    - sleep 10
+    - docker exec test-container curl -f http://localhost:8000/health || exit 1
+    - docker stop test-container
+  only:
+    - main
+    - master
+    - tags
+
+# 部署到生产环境
+deploy_production:
+  stage: deploy
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  script:
+    - echo "部署到生产环境..."
+    - docker pull $IMAGE_NAME:$IMAGE_TAG
+    - docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:production
+    - docker push $IMAGE_NAME:production
+  environment:
+    name: production
+    url: https://your-production-url.com
+  only:
+    - tags
+  when: manual
+
+# 清理旧镜像
+cleanup:
+  stage: deploy
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  before_script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  script:
+    - echo "清理旧镜像..."
+    - |
+      # 保留最新的5个镜像，删除其他镜像
+      for tag in $(docker image ls $IMAGE_NAME --format "{{.Tag}}" | tail -n +6); do
+        docker rmi $IMAGE_NAME:$tag || true
+        docker rmi $CI_REGISTRY_IMAGE:$tag || true
+      done
+  only:
+    - main
+    - master
+  when: manual

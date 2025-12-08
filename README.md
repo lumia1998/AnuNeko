@@ -338,7 +338,7 @@ anuneko-openai/
 - [ ] 添加更多模型映射
 - [ ] 添加更多 API 端点
 - [ ] 添加更多测试用例
-- [ ] 打包 Docker 镜像
+- [x] 打包 Docker 镜像
 - [ ] 实现会话持久化
 - [ ] 添加性能监控
 
@@ -355,4 +355,4 @@ anuneko-openai/
 - [AnuNeko](https://anuneko.com/) - 提供优秀的 AI 模型服务
 - [OpenAI](https://openai.com/) - API 规范设计
 - [Flask](https://flask.palletsprojects.com/) - Web 框架
-- [二叉树树](https://2x.nz/posts/anuneko/) - 逆向工程参考
+- [二叉树树](https://2x.nz/) - 逆向工程参考
