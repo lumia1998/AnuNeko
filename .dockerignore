@@ -1,0 +1,46 @@
+# Git 相关
+.git
+.gitignore
+.github
+.gitlab-ci.yml
+
+# Python 相关
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# 环境变量
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 日志
+logs/
+*.log
+
+# 文档
+docs/
+*.md
+!README.md
+
+# 测试
+test_*.py
+tests/
+
+# 其他
+scripts/
+.dockerignore
+Dockerfile
+docker-compose.yml

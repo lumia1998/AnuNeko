@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  anuneko-openai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: anuneko-openai:latest
+    container_name: anuneko-openai-api
+    
+    # 端口映射
+    ports:
+      - "8000:8000"
+    
+    # 环境变量（从 .env 文件读取）
+    environment:
+      - FLASK_HOST=0.0.0.0
+      - FLASK_PORT=8000
+      - FLASK_DEBUG=${FLASK_DEBUG:-False}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_PATH=logs
+      - LOG_NAME=anuneko-openai
+      # AnuNeko API 认证（必须在 .env 中设置）
+      - ANUNEKO_TOKEN=${ANUNEKO_TOKEN}
+      - ANUNEKO_COOKIE=${ANUNEKO_COOKIE:-}
+    
+    # 数据卷挂载
+    volumes:
+      - ./logs:/app/logs
+    
+    # 重启策略
+    restart: unless-stopped
+    
+    # 健康检查
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # 网络配置
+    networks:
+      - anuneko-network
+
+networks:
+  anuneko-network:
+    driver: bridge
