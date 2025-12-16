@@ -29,8 +29,8 @@ class SessionService:
         # 会话最后使用时间
         self.session_last_used: Dict[str, float] = {}
         # 会话配置
-        self.SESSION_TTL = int(os.environ.get("SESSION_TTL", 7200))  #默认2小时
-        self.NEW_CONVERSATION_THRESHOLD = int(os.environ.get("NEW_CONVERSATION_THRESHOLD", 3))  # 消息数量阈值
+        self.SESSION_TTL = int(os.environ.get("SESSION_TTL", 7200))  # 默认2小时
+        self.NEW_CONVERSATION_THRESHOLD = int(os.environ.get("NEW_CONVERSATION_THRESHOLD", 1))  # 消息数量阈值
     
     def get_anuneko_api(self) -> AnuNekoAPI:
         """获取 AnuNeko API 实例"""
