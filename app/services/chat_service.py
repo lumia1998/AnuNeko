@@ -76,8 +76,8 @@ class ChatService:
         
         return f"data: {json.dumps(chunk, ensure_ascii=False)}\n\n"
     
-    def process_chat_request(self, request_data: Dict[str, Any]):
-        """处理聊天请求"""
+    def process_chat_request(self, request_data: Dict[str, Any], api_key: str = None):
+        """处理聊天请求（支持智能会话管理）"""
         if not request_data:
             return {"error": {"message": "请求体不能为空", "type": "invalid_request_error"}}, 400
         
@@ -98,8 +98,8 @@ class ChatService:
         model = request_data.get("model", "gpt-3.5-turbo")
         stream = request_data.get("stream", False)
         
-        # 获取或创建会话
-        session_id = session_service.get_session_for_request(request_data)
+        # 获取或创建会话（传递 API Key 用于智能管理）
+        session_id = session_service.get_session_for_request(request_data, api_key)
         session = session_service.get_session(session_id)
         
         if stream:

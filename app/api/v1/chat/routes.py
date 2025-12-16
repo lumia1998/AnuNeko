@@ -8,7 +8,17 @@ def chat_completions():
     """聊天完成端点"""
     try:
         request_data = request.get_json()
-        result = chat_service.process_chat_request(request_data)
+        
+        # 提取 API Key（从 Authorization 头或 X-API-Key 头）
+        api_key = None
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            api_key = auth_header[7:]  # 移除 "Bearer " 前缀
+        elif request.headers.get("X-API-Key"):
+            api_key = request.headers.get("X-API-Key")
+        
+        # 将 API Key 传递给服务层
+        result = chat_service.process_chat_request(request_data, api_key)
         
         # 如果结果是元组，说明包含状态码
         if isinstance(result, tuple) and len(result) == 2:
